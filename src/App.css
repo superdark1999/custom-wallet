@@ -1,5 +1,13 @@
+@import url(https://allfont.net/allfont.css?fonts=clear-sans);
+
 .App {
-  text-align: center;
+  padding: 1rem;
+  font-family: "Clear Sans", arial;
+
+  height: 100vh;
+
+  --gray: #667386;
+  --blue: #04004d;
 }
 
 .App-logo {
