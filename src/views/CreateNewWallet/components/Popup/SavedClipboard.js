@@ -1,6 +1,15 @@
-import React from "react";
+import React, { useEffect } from "react";
 
-export default function SavedClipboard() {
+export default function SavedClipboard({ setIsShow }) {
+  console.log("setIsShow", setIsShow);
+  useEffect(() => {
+    console.log("heresdf");
+    const idInterval = setInterval(() => {
+      setIsShow(false);
+    }, 2000);
+
+    return () => clearInterval(idInterval);
+  }, []);
   return (
     <div className="save-clipboard">
       <img className="save-clipboard__saved" src="./saved.svg" alt=""></img>

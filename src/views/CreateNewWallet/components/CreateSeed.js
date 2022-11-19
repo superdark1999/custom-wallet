@@ -2,44 +2,21 @@ import React from "react";
 import styled from "styled-components";
 import AutoGenSeed from "./AutoGenSeed";
 
-export default function CreateSeed({ setIsShow }) {
+export default function CreateSeed({ setIsShow, generatedWord }) {
+  const handleSaveToClipboard = () => {
+    setIsShow(true);
+    navigator.clipboard.writeText(generatedWord);
+  };
   return (
     <CreateSeedStyle>
       <div className="title">Auto Gen Seed Phrase?</div>
-      <AutoGenSeed
-        words={[
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-          "asdf",
-        ]}
-      />
+      <AutoGenSeed words={generatedWord} />
       <div className="clipboard">
         <span>
           Tap to Copy or Carefully write down your seed phrase and store it in a
           safe place
         </span>
-        <img src="./clipboard.svg" alt="" onClick={() => setIsShow(true)} />
+        <img src="./clipboard.svg" alt="" onClick={handleSaveToClipboard} />
       </div>
     </CreateSeedStyle>
   );

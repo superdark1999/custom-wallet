@@ -1,31 +1,122 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
+import { MAX_STEP } from "../../../constants";
 
-export default function ConfirmSeed({ setIsShow, step }) {
+import { getRandomWord } from "..";
+
+const CHECK_WORD_PER_PAGE = 6;
+const WORD_PER_ROW = 3;
+
+const getRandomPositionResult = (length) => {
+  let arr = [];
+  while (arr.length < length) {
+    arr.push(Math.floor(Math.random() * 3));
+  }
+  return arr;
+};
+
+export default function ConfirmSeed({
+  step,
+  generatedWord,
+  setIsCanPassNextStep,
+}) {
+  const [answers, setAnswers] = useState([
+    ...Array(CHECK_WORD_PER_PAGE)
+      .fill(0)
+      .map((_) => {
+        return {
+          isFill: false,
+          isTrue: false,
+          answer: null,
+        };
+      }),
+  ]);
+  const isFullFill = answers.reduce((prev, curr) => curr.isFill && prev, true);
+  const isAnswerCorrect = answers.reduce(
+    (prev, curr) => curr.isTrue && prev,
+    true
+  );
+  const isError = isFullFill && !isAnswerCorrect;
+  const randomPositionResult = useMemo(() => {
+    return getRandomPositionResult(CHECK_WORD_PER_PAGE);
+  }, [step]);
+
+  const dummyWords = useMemo(() => {
+    const tempArray = getRandomWord(12);
+    const chunkSize = 2;
+    return Array(CHECK_WORD_PER_PAGE)
+      .fill(0)
+      .map((value, index) => {
+        const row = tempArray.slice(index * chunkSize, (index + 1) * chunkSize);
+        row.splice(randomPositionResult[index], 0, generatedWord[index]);
+
+        return row;
+      });
+  }, [step]);
+
+  useEffect(() => {
+    setAnswers([
+      ...Array(CHECK_WORD_PER_PAGE)
+        .fill(0)
+        .map((_) => {
+          return {
+            isFill: false,
+            isTrue: false,
+            answer: null,
+          };
+        }),
+    ]);
+  }, [step]);
+
+  useEffect(() => {
+    if (isFullFill && isAnswerCorrect) setIsCanPassNextStep(true);
+    else setIsCanPassNextStep(false);
+  });
+
+  const handleChooseWord = (index, answer) => {
+    const cloneAnswers = [...answers];
+    cloneAnswers[index].isFill = true;
+    cloneAnswers[index].answer = answer;
+    if (answer === randomPositionResult[index])
+      cloneAnswers[index].isTrue = true;
+    else cloneAnswers[index].isTrue = false;
+
+    setAnswers(cloneAnswers);
+  };
+
   return (
     <ConfirmSeedStyle>
       <div className="title">
         <span>Confirm your seed phrase</span>
-        <div className="title__step">{step}/6</div>
+        <div className="title__step">
+          {step}/{MAX_STEP}
+        </div>
       </div>
       <div className="content">
-        {Array(6)
-          .fill(0)
-          .map((_, index) => (
-            <div className="content__row">
-              <div className="content__row-item content__row-index">
-                {index + 1}
-              </div>
-              <div className="content__row-item content__row-active">Word</div>
-              <div className="content__row-item">Word</div>
-              <div className="content__row-item">Word</div>
+        {dummyWords.map((row, index) => (
+          <div className="content__row">
+            <div className="content__row-item content__row-index">
+              {index + 1}
             </div>
-          ))}
+            {row.map((word, rowIndex) => (
+              <div
+                className={`content__row-item ${
+                  answers[index].answer === rowIndex && "content__row-active"
+                }`}
+                onClick={() => handleChooseWord(index, rowIndex)}
+              >
+                {word}
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
-      <div className="warning">
-        <img src="../warning.svg"></img>
-        Wrong seed phrases. Please try again!
-      </div>
+      {isError && (
+        <div className="warning">
+          <img src="../warning.svg" alt=""></img>
+          Wrong seed phrases. Please try again!
+        </div>
+      )}
     </ConfirmSeedStyle>
   );
 }
@@ -55,19 +146,20 @@ const ConfirmSeedStyle = styled.div`
   .content {
     &__row {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: 0.5fr repeat(3, 1fr);
+      grid-column-gap: 1rem;
       margin-bottom: 1rem;
       padding: 1rem;
       border: 1px solid #d3d7db;
       border-radius: 6px;
 
       &-item {
-        width: 59px;
+        display: grid;
+        place-items: center;
+        padding: 0 0.2rem;
       }
 
       &-active {
-        display: grid;
-        place-items: center;
         background: #bbcffb;
         /* Drop Shadow 20 */
 

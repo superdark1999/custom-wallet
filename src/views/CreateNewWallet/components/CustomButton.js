@@ -2,7 +2,11 @@ import React from "react";
 import styled from "styled-components";
 
 export default function CustomButton({ onClick, title, disabled }) {
-  return <CustomButtonStyle disabled={disabled}>{title}</CustomButtonStyle>;
+  return (
+    <CustomButtonStyle disabled={disabled} onClick={onClick}>
+      {title}
+    </CustomButtonStyle>
+  );
 }
 
 const CustomButtonStyle = styled.div`

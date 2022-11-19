@@ -6,40 +6,76 @@ import SavedClipboard from "./components/Popup/SavedClipboard";
 import PrivacyConfirm from "./components/Popup/PrivacyConfirm";
 import CreateSeed from "./components/CreateSeed";
 import ConfirmSeed from "./components/ConfirmSeed";
+import CustomButton from "./components/CustomButton";
+import words from "../../words.json";
+
+import { MAX_STEP } from "../../constants";
+
+export const getRandomWord = (length) => {
+  let arr = [];
+  while (arr.length < length) {
+    let r = Math.floor(Math.random() * words.length) + 1;
+    if (arr.indexOf(r) === -1) arr.push(r);
+  }
+
+  return arr.map((a) => words[a]);
+};
 
 export default function CreateNewWallet() {
-  const [isShow, setIsShow] = useState(true);
+  const [isShow, setIsShow] = useState(false);
   const [step, setStep] = useState(0);
-  const Components = useMemo(() => [CreateSeed, ConfirmSeed], []);
-  const RenderComponent = Components[step === 0 ? 0 : 1];
+  const [isCanPassNextStep, setIsCanPassNextStep] = useState(true);
+  console.log("isCanPassNextStep: ", isCanPassNextStep);
+  const MainComponents = useMemo(() => [CreateSeed, ConfirmSeed], []);
+  const PopupComponents = useMemo(() => [SavedClipboard, PrivacyConfirm], []);
+  const MainRenderComponent = MainComponents[step === 0 ? 0 : 1];
+  const PopupRenderComponent = PopupComponents[step === 0 ? 0 : 1];
+  const generatedWord = useMemo(() => getRandomWord(24), []);
+
+  const mainProps = useMemo(
+    () => [
+      { setIsShow, generatedWord },
+      {
+        setIsShow,
+        setIsCanPassNextStep,
+        step,
+        generatedWord: generatedWord.slice((step - 1) * 6, (step - 1) * 6 + 6),
+      },
+    ],
+    [step]
+  );
+
+  const renderMainProps = mainProps[step === 0 ? 0 : 1];
 
   const handleChangeStep = () => {
-    if (step <= 5) setStep((prev) => prev + 1);
+    if (!isCanPassNextStep) return;
+    if (step === MAX_STEP) setIsShow(true);
+    if (step <= MAX_STEP - 1) setStep((prev) => prev + 1);
   };
-
-  const handleShowPopup = () => {};
 
   return (
     <CreateNewWalletStyle>
-      <div className="back">
+      <div className="back" onClick={() => setStep((prev) => prev - 1)}>
         <img src="./back.png" alt="" />
         Create New Wallet
       </div>
 
-      <RenderComponent setIsShow={setIsShow} step={step} />
+      <MainRenderComponent {...renderMainProps} />
 
       <div className="confirm">
         <div className="confirm-title">
           How does this work
           <img src="./back.png" alt="" />
         </div>
-        <div className="confirm-btn" onClick={handleChangeStep}>
-          Next
-        </div>
+        <CustomButton
+          disabled={!isCanPassNextStep}
+          title="Next"
+          onClick={handleChangeStep}
+        />
       </div>
 
       <BasePopup isShow={isShow} setIsShow={setIsShow}>
-        <PrivacyConfirm />
+        <PopupRenderComponent setIsShow={setIsShow} />
       </BasePopup>
     </CreateNewWalletStyle>
   );
